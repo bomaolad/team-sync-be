@@ -136,7 +136,7 @@ POST   /tasks/:id/attachments # Upload attachment
 
 - Node.js >= 18
 - PostgreSQL >= 14
-- npm or yarn
+- pnpm or yarn
 
 ### Installation
 
@@ -146,17 +146,17 @@ git clone <repository-url>
 cd be-team-sync
 
 # Install dependencies
-npm install
+pnpm install
 
 # Configure environment variables
 cp .env.example .env
 # Edit .env with your database credentials and JWT secret
 
 # Run database migrations
-npm run migration:run
+pnpm run migration:run
 
 # Start development server
-npm run start:dev
+pnpm run start:dev
 ```
 
 ### Environment Variables
@@ -178,20 +178,20 @@ PORT=3000
 
 ```bash
 # Development mode with hot reload
-npm run start:dev
+pnpm run start:dev
 
 # Production build
-npm run build
+pnpm run build
 
 # Run tests
-npm run test
+pnpm run test
 
 # Run e2e tests
-npm run test:e2e
+pnpm run test:e2e
 
 # Database migrations
-npm run migration:generate -- -n MigrationName
-npm run migration:run
+pnpm run migration:generate -- -n MigrationName
+pnpm run migration:run
 ```
 
 ## Non-Functional Requirements
