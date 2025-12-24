@@ -70,7 +70,7 @@ export class TeamsService {
         }
         return this.teamsRepository.update(id, updateTeamDto);
       })
-      .then(() => this.findOne(id));
+      .then(() => this.findOne(id) as Promise<Team>);
   }
 
   remove(id: string, userId: string): Promise<void> {
@@ -165,8 +165,11 @@ export class TeamsService {
       .then(() =>
         this.teamMembersRepository.update({ id: memberId, teamId }, { role }),
       )
-      .then(() =>
-        this.teamMembersRepository.findOne({ where: { id: memberId } }),
+      .then(
+        () =>
+          this.teamMembersRepository.findOne({
+            where: { id: memberId },
+          }) as Promise<TeamMember>,
       );
   }
 
@@ -183,7 +186,7 @@ export class TeamsService {
         const newCode = uuidv4().substring(0, 8).toUpperCase();
         return this.teamsRepository.update(teamId, { inviteCode: newCode });
       })
-      .then(() => this.findOne(teamId));
+      .then(() => this.findOne(teamId) as Promise<Team>);
   }
 
   private checkAdminAccess(teamId: string, userId: string): Promise<void> {

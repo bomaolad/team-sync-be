@@ -72,7 +72,7 @@ export class TeamsController {
     return this.teamsService.inviteMember(
       id,
       inviteDto.email,
-      inviteDto.role,
+      inviteDto.role || 'MEMBER',
       req.user.sub,
     );
   }
