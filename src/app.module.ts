@@ -10,6 +10,7 @@ import { ProjectsModule } from './projects/projects.module';
 import { TasksModule } from './tasks/tasks.module';
 import { CommentsModule } from './comments/comments.module';
 import { AttachmentsModule } from './attachments/attachments.module';
+import { GatewayModule } from './gateway/gateway.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { AttachmentsModule } from './attachments/attachments.module';
     TasksModule,
     CommentsModule,
     AttachmentsModule,
+    GatewayModule,
   ],
   controllers: [AppController],
   providers: [AppService],
