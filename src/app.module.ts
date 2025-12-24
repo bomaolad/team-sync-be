@@ -8,6 +8,8 @@ import { UsersModule } from './users/users.module';
 import { TeamsModule } from './teams/teams.module';
 import { ProjectsModule } from './projects/projects.module';
 import { TasksModule } from './tasks/tasks.module';
+import { CommentsModule } from './comments/comments.module';
+import { AttachmentsModule } from './attachments/attachments.module';
 
 @Module({
   imports: [
@@ -38,6 +40,8 @@ import { TasksModule } from './tasks/tasks.module';
     TeamsModule,
     ProjectsModule,
     TasksModule,
+    CommentsModule,
+    AttachmentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
