@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class RegisterDto {
   @ApiProperty({
-    example: 'user@example.com',
+    example: 'muhammedbello.new@gmail.com.com',
     description: 'User email address',
   })
   @IsEmail()
@@ -18,11 +18,11 @@ export class RegisterDto {
   @MinLength(6)
   password: string;
 
-  @ApiProperty({ example: 'John', description: 'First name' })
+  @ApiProperty({ example: 'Muhammed', description: 'First name' })
   @IsString()
   firstName: string;
 
-  @ApiProperty({ example: 'Doe', description: 'Last name' })
+  @ApiProperty({ example: 'Bello', description: 'Last name' })
   @IsString()
   lastName: string;
 
@@ -38,7 +38,7 @@ export class RegisterDto {
 
 export class LoginDto {
   @ApiProperty({
-    example: 'user@example.com',
+    example: 'muhammedbello@gmail.com.com',
     description: 'User email address',
   })
   @IsEmail()
@@ -59,9 +59,9 @@ export class AuthResponseDto {
   @ApiProperty({
     example: {
       id: '123e4567-e89b-12d3-a456-426614174000',
-      email: 'user@example.com',
-      firstName: 'John',
-      lastName: 'Doe',
+      email: 'muhammedbello@gmail.com.com',
+      firstName: 'Muhammed',
+      lastName: 'Bello',
       role: 'MEMBER',
     },
     description: 'User details',

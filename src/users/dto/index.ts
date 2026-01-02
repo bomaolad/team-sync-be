@@ -9,7 +9,10 @@ import { UserRole } from '../../common/enums';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateUserDto {
-  @ApiProperty({ example: 'newuser@example.com', description: 'User email' })
+  @ApiProperty({
+    example: 'newmuhammedbello@gmail.com.com',
+    description: 'User email',
+  })
   @IsEmail()
   email: string;
 
@@ -55,7 +58,7 @@ export class UpdateUserDto {
   @IsString()
   firstName?: string;
 
-  @ApiProperty({ example: 'Doe', description: 'Last name', required: false })
+  @ApiProperty({ example: 'Bello', description: 'Last name', required: false })
   @IsOptional()
   @IsString()
   lastName?: string;

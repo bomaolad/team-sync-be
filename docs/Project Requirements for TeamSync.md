@@ -32,14 +32,14 @@ The core problem it solves is **"Status Ambiguity"**—eliminating the need for 
 1. **Home Dashboard:** The user lands on the Home page. They immediately see **"My Priorities"** (Tasks assigned to them that are due soon).
 2. **Project Creation:** The Admin creates a specific project (e.g., "Website Redesign").
 3. **Task Creation:** Inside the project, the Admin creates a task: "Design Home Page Banner."
-4. **Assignment:** The Admin selects a team member (e.g., John) to do the task.
-5. **Notification:** John receives a push notification: _"New Task Assigned: Design Home Page Banner."_
+4. **Assignment:** The Admin selects a team member (e.g., Muhammed) to do the task.
+5. **Notification:** Muhammed receives a push notification: _"New Task Assigned: Design Home Page Banner."_
 
 ### **Phase 3: Execution & Updates**
 
-1. **Working:** John opens the task. He changes the status from **"To Do"** to **"In Progress."** The whole team sees this update instantly.
-2. **Collaboration:** John has a question. He posts a comment on the task: _"Should this be blue or red?"_ The Admin replies in the thread.
-3. **Review:** John finishes the design. He uploads the image to the task and changes status to **"Under Review."**
+1. **Working:** Muhammed opens the task. He changes the status from **"To Do"** to **"In Progress."** The whole team sees this update instantly.
+2. **Collaboration:** Muhammed has a question. He posts a comment on the task: _"Should this be blue or red?"_ The Admin replies in the thread.
+3. **Review:** Muhammed finishes the design. He uploads the image to the task and changes status to **"Under Review."**
 4. **Completion:** The Admin checks the work, approves it, and changes the status to **"Done."**
 
 ## **4\. Detailed Page Breakdown & Features**
@@ -87,7 +87,7 @@ This is the heart of the app. It should have two tabs at the top: **List View** 
 - **Sub-tasks:** Checkboxes for smaller steps within the task.
 - **Attachments:** Ability to upload photos or documents.
 - **Activity/Comments:** Chat-style history at the bottom.
-  - _System messages:_ "John changed status to In Progress."
+  - _System messages:_ "Muhammed changed status to In Progress."
   - _User comments:_ "Here is the file."
 
 ### **F. The "Team" Tab**
