@@ -151,7 +151,21 @@ export class TeamsService {
     userId: string,
   ): Promise<void> {
     return this.checkAdminAccess(teamId, userId)
-      .then(() => this.teamMembersRepository.delete({ id: memberId, teamId }))
+      .then(() =>
+        this.teamMembersRepository.findOne({
+          where: { id: memberId, teamId },
+          relations: ['team'],
+        }),
+      )
+      .then((member) => {
+        if (!member) {
+          throw new NotFoundException('Member not found');
+        }
+        if (member.team && member.userId === member.team.ownerId) {
+          throw new ForbiddenException('Cannot remove the team owner');
+        }
+        return this.teamMembersRepository.delete({ id: memberId, teamId });
+      })
       .then(() => undefined);
   }
 
@@ -163,8 +177,25 @@ export class TeamsService {
   ): Promise<TeamMember> {
     return this.checkAdminAccess(teamId, userId)
       .then(() =>
-        this.teamMembersRepository.update({ id: memberId, teamId }, { role }),
+        this.teamMembersRepository.findOne({
+          where: { id: memberId, teamId },
+          relations: ['team'],
+        }),
       )
+      .then((member) => {
+        if (!member) {
+          throw new NotFoundException('Member not found');
+        }
+        if (member.team && member.userId === member.team.ownerId) {
+          throw new ForbiddenException(
+            'Cannot change the role of the team owner',
+          );
+        }
+        return this.teamMembersRepository.update(
+          { id: memberId, teamId },
+          { role },
+        );
+      })
       .then(
         () =>
           this.teamMembersRepository.findOne({

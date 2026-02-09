@@ -52,6 +52,12 @@ export class ProjectsService {
         });
       }
 
+      if (query.search) {
+        queryBuilder.andWhere('LOWER(project.name) LIKE :search', {
+          search: `%${query.search.toLowerCase()}%`,
+        });
+      }
+
       return queryBuilder.orderBy('project.createdAt', 'DESC').getMany();
     });
   }

@@ -7,7 +7,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { UserRole } from '../../common/enums';
-import { Exclude } from 'class-transformer';
+import { Exclude, Expose } from 'class-transformer';
 
 @Entity('users')
 export class User {
@@ -27,6 +27,9 @@ export class User {
   @Column()
   lastName: string;
 
+  @Column({ unique: true, nullable: true })
+  username: string;
+
   @Column({ nullable: true })
   avatarUrl: string;
 
@@ -43,13 +46,20 @@ export class User {
   @Column({ default: false })
   isEmailVerified: boolean;
 
+  @Column({ nullable: true })
+  resetPasswordToken: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  resetPasswordExpires: Date;
+
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
 
-  get fullName(): string {
-    return `${this.firstName} ${this.lastName}`;
+  @Expose()
+  get name(): string {
+    return `${this.firstName} ${this.lastName}`.trim();
   }
 }

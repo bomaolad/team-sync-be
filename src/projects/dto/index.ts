@@ -3,9 +3,9 @@ import { ProjectStatus } from '../../common/enums';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateProjectDto {
-  @ApiProperty({ example: 'New Website Launch', description: 'Project title' })
+  @ApiProperty({ example: 'New Website Launch', description: 'Project name' })
   @IsString()
-  title: string;
+  name: string;
 
   @ApiProperty({
     example: 'Launch the new corporate website',
@@ -27,12 +27,12 @@ export class CreateProjectDto {
 export class UpdateProjectDto {
   @ApiProperty({
     example: 'Website Redesign',
-    description: 'Project title',
+    description: 'Project name',
     required: false,
   })
   @IsOptional()
   @IsString()
-  title?: string;
+  name?: string;
 
   @ApiProperty({
     example: 'Updated project scope',
@@ -73,4 +73,13 @@ export class ProjectQueryDto {
   @IsOptional()
   @IsEnum(ProjectStatus)
   status?: ProjectStatus;
+
+  @ApiProperty({
+    example: 'Website',
+    description: 'Search by name',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  search?: string;
 }

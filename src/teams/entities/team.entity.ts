@@ -54,7 +54,7 @@ export class TeamMember {
 
   @Column({
     type: 'enum',
-    enum: ['ADMIN', 'MEMBER', 'GUEST'],
+    enum: ['ADMIN', 'MEMBER', 'GUEST', 'VIEWER'],
     default: 'MEMBER',
   })
   role: string;

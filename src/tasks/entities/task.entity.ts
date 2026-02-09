@@ -5,8 +5,10 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
+  ManyToMany,
   OneToMany,
   JoinColumn,
+  JoinTable,
 } from 'typeorm';
 import { Project } from '../../projects/entities/project.entity';
 import { User } from '../../users/entities/user.entity';
@@ -25,9 +27,6 @@ export class Task {
 
   @Column('uuid')
   projectId: string;
-
-  @Column({ type: 'uuid', nullable: true })
-  assigneeId: string;
 
   @Column('uuid')
   creatorId: string;
@@ -56,9 +55,19 @@ export class Task {
   @JoinColumn({ name: 'projectId' })
   project: Project;
 
-  @ManyToOne(() => User, { nullable: true })
-  @JoinColumn({ name: 'assigneeId' })
-  assignee: User;
+  @ManyToMany(() => User)
+  @JoinTable({
+    name: 'task_assignees',
+    joinColumn: {
+      name: 'taskId',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'userId',
+      referencedColumnName: 'id',
+    },
+  })
+  assignees: User[];
 
   @ManyToOne(() => User)
   @JoinColumn({ name: 'creatorId' })

@@ -4,6 +4,7 @@ import {
   IsEnum,
   IsUUID,
   IsDateString,
+  IsArray,
 } from 'class-validator';
 import { TaskStatus, TaskPriority } from '../../common/enums';
 import { ApiProperty } from '@nestjs/swagger';
@@ -30,13 +31,15 @@ export class CreateTaskDto {
   projectId: string;
 
   @ApiProperty({
-    example: '123e4567-e89b-12d3-a456-426614174000',
-    description: 'Assignee User ID',
+    example: ['123e4567-e89b-12d3-a456-426614174000'],
+    description: 'Assignee User IDs',
     required: false,
+    type: [String],
   })
   @IsOptional()
-  @IsUUID()
-  assigneeId?: string;
+  @IsArray()
+  @IsUUID('4', { each: true })
+  assigneeIds?: string[];
 
   @ApiProperty({
     example: TaskPriority.HIGH,
@@ -87,13 +90,15 @@ export class UpdateTaskDto {
   description?: string;
 
   @ApiProperty({
-    example: '123e4567-e89b-12d3-a456-426614174000',
-    description: 'New assignee ID',
+    example: ['123e4567-e89b-12d3-a456-426614174000'],
+    description: 'New assignee IDs',
     required: false,
+    type: [String],
   })
   @IsOptional()
-  @IsUUID()
-  assigneeId?: string;
+  @IsArray()
+  @IsUUID('4', { each: true })
+  assigneeIds?: string[];
 
   @ApiProperty({
     example: TaskPriority.MEDIUM,

@@ -17,7 +17,7 @@ export class Project {
   id: string;
 
   @Column()
-  title: string;
+  name: string;
 
   @Column({ nullable: true, type: 'text' })
   description: string;

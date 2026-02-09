@@ -2,11 +2,21 @@ import {
   Injectable,
   UnauthorizedException,
   ConflictException,
+  NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 import { UsersService } from '../users/users.service';
-import { RegisterDto, LoginDto, AuthResponseDto } from './dto';
+import {
+  RegisterDto,
+  LoginDto,
+  AuthResponseDto,
+  ForgotPasswordDto,
+  ResetPasswordDto,
+  MessageResponseDto,
+} from './dto';
 
 @Injectable()
 export class AuthService {
@@ -16,6 +26,8 @@ export class AuthService {
   ) {}
 
   register(registerDto: RegisterDto): Promise<AuthResponseDto> {
+    const { firstName, lastName } = registerDto;
+
     return this.usersService
       .findByEmail(registerDto.email)
       .then((existingUser) => {
@@ -26,14 +38,19 @@ export class AuthService {
       })
       .then((hashedPassword) => {
         return this.usersService.create({
-          ...registerDto,
+          email: registerDto.email,
           password: hashedPassword,
+          firstName,
+          lastName,
+          username: registerDto.username,
+          jobTitle: registerDto.jobTitle,
         });
       })
       .then((user) => {
         const payload = { sub: user.id, email: user.email, role: user.role };
         return {
           accessToken: this.jwtService.sign(payload),
+          message: 'Account created successfully!',
           user: {
             id: user.id,
             email: user.email,
@@ -68,6 +85,7 @@ export class AuthService {
         };
         return {
           accessToken: this.jwtService.sign(payload),
+          message: 'Welcome back!',
           user: {
             id: foundUser.id,
             email: foundUser.email,
@@ -76,6 +94,68 @@ export class AuthService {
             role: foundUser.role,
           },
         };
+      });
+  }
+
+  forgotPassword(
+    forgotPasswordDto: ForgotPasswordDto,
+  ): Promise<MessageResponseDto> {
+    return this.usersService
+      .findByEmail(forgotPasswordDto.email)
+      .then((user) => {
+        if (!user) {
+          return {
+            message:
+              'If an account exists with this email, a password reset link has been sent.',
+          };
+        }
+
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const resetExpires = new Date(Date.now() + 3600000);
+
+        return this.usersService
+          .update(user.id, {
+            resetPasswordToken: resetToken,
+            resetPasswordExpires: resetExpires,
+          })
+          .then(() => {
+            console.log(
+              `Password reset token for ${user.email}: ${resetToken}`,
+            );
+            return {
+              message:
+                'If an account exists with this email, a password reset link has been sent.',
+            };
+          });
+      });
+  }
+
+  resetPassword(
+    resetPasswordDto: ResetPasswordDto,
+  ): Promise<MessageResponseDto> {
+    return this.usersService
+      .findByResetToken(resetPasswordDto.token)
+      .then((user) => {
+        if (!user) {
+          throw new BadRequestException('Invalid or expired reset token');
+        }
+
+        if (user.resetPasswordExpires < new Date()) {
+          throw new BadRequestException('Reset token has expired');
+        }
+
+        return bcrypt
+          .hash(resetPasswordDto.newPassword, 10)
+          .then((hashedPassword) => {
+            return this.usersService.update(user.id, {
+              password: hashedPassword,
+              resetPasswordToken: undefined,
+              resetPasswordExpires: undefined,
+            });
+          });
+      })
+      .then(() => {
+        return { message: 'Password reset successfully!' };
       });
   }
 

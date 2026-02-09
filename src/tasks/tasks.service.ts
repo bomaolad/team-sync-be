@@ -7,6 +7,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Task, Subtask } from './entities/task.entity';
+import { User } from '../users/entities/user.entity';
 import {
   CreateTaskDto,
   UpdateTaskDto,
@@ -29,11 +30,17 @@ export class TasksService {
   ) {}
 
   create(createTaskDto: CreateTaskDto, userId: string): Promise<Task> {
+    const { assigneeIds, ...taskData } = createTaskDto;
     return this.projectsService.findOne(createTaskDto.projectId).then(() => {
       const task = this.tasksRepository.create({
-        ...createTaskDto,
+        ...taskData,
         creatorId: userId,
       });
+
+      if (assigneeIds && assigneeIds.length > 0) {
+        task.assignees = assigneeIds.map((id) => ({ id }) as User);
+      }
+
       return this.tasksRepository.save(task);
     });
   }
@@ -41,7 +48,7 @@ export class TasksService {
   findAll(query: TaskQueryDto): Promise<Task[]> {
     const queryBuilder = this.tasksRepository
       .createQueryBuilder('task')
-      .leftJoinAndSelect('task.assignee', 'assignee')
+      .leftJoinAndSelect('task.assignees', 'assignees')
       .leftJoinAndSelect('task.creator', 'creator')
       .leftJoinAndSelect('task.project', 'project');
 
@@ -51,9 +58,12 @@ export class TasksService {
       });
     }
     if (query.assigneeId) {
-      queryBuilder.andWhere('task.assigneeId = :assigneeId', {
-        assigneeId: query.assigneeId,
-      });
+      queryBuilder.innerJoin(
+        'task.assignees',
+        'assigneeFilter',
+        'assigneeFilter.id = :assigneeId',
+        { assigneeId: query.assigneeId },
+      );
     }
     if (query.status) {
       queryBuilder.andWhere('task.status = :status', { status: query.status });
@@ -69,8 +79,12 @@ export class TasksService {
 
   findByUser(userId: string): Promise<Task[]> {
     return this.tasksRepository.find({
-      where: { assigneeId: userId },
-      relations: ['project', 'creator'],
+      where: {
+        assignees: {
+          id: userId,
+        },
+      },
+      relations: ['assignees', 'project', 'creator'],
       order: { dueDate: 'ASC', priority: 'DESC' },
     });
   }
@@ -79,7 +93,7 @@ export class TasksService {
     return this.tasksRepository
       .findOne({
         where: { id },
-        relations: ['assignee', 'creator', 'project'],
+        relations: ['assignees', 'creator', 'project'],
       })
       .then((task) => {
         if (!task) {
@@ -90,9 +104,14 @@ export class TasksService {
   }
 
   update(id: string, updateTaskDto: UpdateTaskDto): Promise<Task> {
-    return this.findOne(id)
-      .then(() => this.tasksRepository.update(id, updateTaskDto))
-      .then(() => this.findOne(id));
+    const { assigneeIds, ...taskData } = updateTaskDto;
+    return this.findOne(id).then((task) => {
+      if (assigneeIds) {
+        task.assignees = assigneeIds.map((id) => ({ id }) as User);
+      }
+      this.tasksRepository.merge(task, taskData);
+      return this.tasksRepository.save(task);
+    });
   }
 
   updateStatus(
@@ -166,19 +185,35 @@ export class TasksService {
     return this.subtasksRepository.delete(subtaskId).then(() => undefined);
   }
 
-  getProjectProgress(
-    projectId: string,
-  ): Promise<{ total: number; completed: number; percentage: number }> {
-    return this.tasksRepository
-      .count({ where: { projectId } })
-      .then((total) => {
-        return this.tasksRepository
-          .count({ where: { projectId, status: TaskStatus.DONE } })
-          .then((completed) => ({
-            total,
-            completed,
-            percentage: total > 0 ? Math.round((completed / total) * 100) : 0,
-          }));
-      });
+  async getProjectProgress(projectId: string): Promise<{
+    total: number;
+    completed: number;
+    inProgress: number;
+    underReview: number;
+    todo: number;
+    percentage: number;
+  }> {
+    const total = await this.tasksRepository.count({ where: { projectId } });
+    const completed = await this.tasksRepository.count({
+      where: { projectId, status: TaskStatus.DONE },
+    });
+    const inProgress = await this.tasksRepository.count({
+      where: { projectId, status: TaskStatus.IN_PROGRESS },
+    });
+    const underReview = await this.tasksRepository.count({
+      where: { projectId, status: TaskStatus.UNDER_REVIEW },
+    });
+    const todo = await this.tasksRepository.count({
+      where: { projectId, status: TaskStatus.TODO },
+    });
+
+    return {
+      total,
+      completed,
+      inProgress,
+      underReview,
+      todo,
+      percentage: total > 0 ? Math.round((completed / total) * 100) : 0,
+    };
   }
 }

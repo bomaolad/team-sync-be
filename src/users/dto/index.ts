@@ -33,6 +33,11 @@ export class CreateUserDto {
   @IsString()
   lastName: string;
 
+  @ApiProperty({ example: 'jane_smith', description: 'Username' })
+  @IsString()
+  @MinLength(3)
+  username: string;
+
   @ApiProperty({
     example: 'Product Manager',
     description: 'Job title',
@@ -80,6 +85,15 @@ export class UpdateUserDto {
   @IsOptional()
   @IsString()
   avatarUrl?: string;
+
+  @ApiProperty({
+    example: 'jane_smith',
+    description: 'Username',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  username?: string;
 }
 
 export class UpdateRoleDto {

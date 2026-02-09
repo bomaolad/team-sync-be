@@ -52,21 +52,21 @@ export class InviteMemberDto {
 
   @ApiProperty({
     example: 'MEMBER',
-    enum: ['ADMIN', 'MEMBER', 'GUEST'],
+    enum: ['ADMIN', 'MEMBER', 'GUEST', 'VIEWER'],
     description: 'Role in team',
     required: false,
   })
   @IsOptional()
-  @IsEnum(['ADMIN', 'MEMBER', 'GUEST'])
+  @IsEnum(['ADMIN', 'MEMBER', 'GUEST', 'VIEWER'])
   role?: string;
 }
 
 export class UpdateMemberRoleDto {
   @ApiProperty({
     example: 'ADMIN',
-    enum: ['ADMIN', 'MEMBER', 'GUEST'],
+    enum: ['ADMIN', 'MEMBER', 'GUEST', 'VIEWER'],
     description: 'New role',
   })
-  @IsEnum(['ADMIN', 'MEMBER', 'GUEST'])
+  @IsEnum(['ADMIN', 'MEMBER', 'GUEST', 'VIEWER'])
   role: string;
 }
