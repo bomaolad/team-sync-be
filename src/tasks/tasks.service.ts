@@ -17,6 +17,7 @@ import {
   UpdateSubtaskDto,
 } from './dto';
 import { ProjectsService } from '../projects/projects.service';
+import { TeamsService } from '../teams/teams.service';
 import { TaskStatus } from '../common/enums';
 
 @Injectable()
@@ -27,22 +28,27 @@ export class TasksService {
     @InjectRepository(Subtask)
     private subtasksRepository: Repository<Subtask>,
     private projectsService: ProjectsService,
+    private teamsService: TeamsService,
   ) {}
 
   create(createTaskDto: CreateTaskDto, userId: string): Promise<Task> {
     const { assigneeIds, ...taskData } = createTaskDto;
-    return this.projectsService.findOne(createTaskDto.projectId).then(() => {
-      const task = this.tasksRepository.create({
-        ...taskData,
-        creatorId: userId,
+    return this.projectsService
+      .findOne(createTaskDto.projectId)
+      .then((project) => {
+        return this.checkEditAccess(project.teamId, userId).then(() => {
+          const task = this.tasksRepository.create({
+            ...taskData,
+            creatorId: userId,
+          });
+
+          if (assigneeIds && assigneeIds.length > 0) {
+            task.assignees = assigneeIds.map((id) => ({ id }) as User);
+          }
+
+          return this.tasksRepository.save(task);
+        });
       });
-
-      if (assigneeIds && assigneeIds.length > 0) {
-        task.assignees = assigneeIds.map((id) => ({ id }) as User);
-      }
-
-      return this.tasksRepository.save(task);
-    });
   }
 
   findAll(query: TaskQueryDto): Promise<Task[]> {
@@ -103,14 +109,22 @@ export class TasksService {
       });
   }
 
-  update(id: string, updateTaskDto: UpdateTaskDto): Promise<Task> {
+  update(
+    id: string,
+    updateTaskDto: UpdateTaskDto,
+    userId: string,
+  ): Promise<Task> {
     const { assigneeIds, ...taskData } = updateTaskDto;
     return this.findOne(id).then((task) => {
-      if (assigneeIds) {
-        task.assignees = assigneeIds.map((id) => ({ id }) as User);
-      }
-      this.tasksRepository.merge(task, taskData);
-      return this.tasksRepository.save(task);
+      return this.projectsService.findOne(task.projectId).then((project) => {
+        return this.checkEditAccess(project.teamId, userId).then(() => {
+          if (assigneeIds) {
+            task.assignees = assigneeIds.map((id) => ({ id }) as User);
+          }
+          this.tasksRepository.merge(task, taskData);
+          return this.tasksRepository.save(task);
+        });
+      });
     });
   }
 
@@ -140,10 +154,14 @@ export class TasksService {
     });
   }
 
-  remove(id: string): Promise<void> {
-    return this.findOne(id)
-      .then(() => this.tasksRepository.delete(id))
-      .then(() => undefined);
+  remove(id: string, userId: string): Promise<void> {
+    return this.findOne(id).then((task) => {
+      return this.projectsService.findOne(task.projectId).then((project) => {
+        return this.checkEditAccess(project.teamId, userId).then(() => {
+          return this.tasksRepository.delete(id).then(() => undefined);
+        });
+      });
+    });
   }
 
   getSubtasks(taskId: string): Promise<Subtask[]> {
@@ -156,13 +174,18 @@ export class TasksService {
   createSubtask(
     taskId: string,
     createSubtaskDto: CreateSubtaskDto,
+    userId: string,
   ): Promise<Subtask> {
-    return this.findOne(taskId).then(() => {
-      const subtask = this.subtasksRepository.create({
-        ...createSubtaskDto,
-        taskId,
+    return this.findOne(taskId).then((task) => {
+      return this.projectsService.findOne(task.projectId).then((project) => {
+        return this.checkEditAccess(project.teamId, userId).then(() => {
+          const subtask = this.subtasksRepository.create({
+            ...createSubtaskDto,
+            taskId,
+          });
+          return this.subtasksRepository.save(subtask);
+        });
       });
-      return this.subtasksRepository.save(subtask);
     });
   }
 
@@ -215,5 +238,17 @@ export class TasksService {
       todo,
       percentage: total > 0 ? Math.round((completed / total) * 100) : 0,
     };
+  }
+
+  private checkEditAccess(teamId: string, userId: string): Promise<void> {
+    return this.teamsService.getMembers(teamId).then((members) => {
+      const member = members.find((m) => m.userId === userId);
+      if (!member) {
+        throw new ForbiddenException('Not a member of this team');
+      }
+      if (member.role === 'VIEWER') {
+        throw new ForbiddenException('Viewers cannot edit tasks');
+      }
+    });
   }
 }

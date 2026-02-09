@@ -47,8 +47,12 @@ export class TasksController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTaskDto: UpdateTaskDto) {
-    return this.tasksService.update(id, updateTaskDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateTaskDto: UpdateTaskDto,
+    @Request() req: any,
+  ) {
+    return this.tasksService.update(id, updateTaskDto, req.user.sub);
   }
 
   @Patch(':id/status')
@@ -61,8 +65,8 @@ export class TasksController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.tasksService.remove(id);
+  remove(@Param('id') id: string, @Request() req: any) {
+    return this.tasksService.remove(id, req.user.sub);
   }
 
   @Get(':id/subtasks')
@@ -74,8 +78,9 @@ export class TasksController {
   createSubtask(
     @Param('id') id: string,
     @Body() createSubtaskDto: CreateSubtaskDto,
+    @Request() req: any,
   ) {
-    return this.tasksService.createSubtask(id, createSubtaskDto);
+    return this.tasksService.createSubtask(id, createSubtaskDto, req.user.sub);
   }
 
   @Patch('subtasks/:subtaskId')

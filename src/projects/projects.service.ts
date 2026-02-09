@@ -18,16 +18,10 @@ export class ProjectsService {
   ) {}
 
   create(createProjectDto: CreateProjectDto, userId: string): Promise<Project> {
-    return this.teamsService
-      .getMembers(createProjectDto.teamId)
-      .then((members) => {
-        const isMember = members.some((m) => m.userId === userId);
-        if (!isMember) {
-          throw new ForbiddenException('Not a member of this team');
-        }
-        const project = this.projectsRepository.create(createProjectDto);
-        return this.projectsRepository.save(project);
-      });
+    return this.checkEditAccess(createProjectDto.teamId, userId).then(() => {
+      const project = this.projectsRepository.create(createProjectDto);
+      return this.projectsRepository.save(project);
+    });
   }
 
   findAll(query: ProjectQueryDto, userId: string): Promise<Project[]> {
@@ -83,7 +77,7 @@ export class ProjectsService {
   ): Promise<Project> {
     return this.findOne(id)
       .then((project) =>
-        this.checkMemberAccess(project.teamId, userId).then(() => project),
+        this.checkEditAccess(project.teamId, userId).then(() => project),
       )
       .then(() => this.projectsRepository.update(id, updateProjectDto))
       .then(() => this.findOne(id));
@@ -114,6 +108,18 @@ export class ProjectsService {
       );
       if (!isAdmin) {
         throw new ForbiddenException('Admin access required');
+      }
+    });
+  }
+
+  private checkEditAccess(teamId: string, userId: string): Promise<void> {
+    return this.teamsService.getMembers(teamId).then((members) => {
+      const member = members.find((m) => m.userId === userId);
+      if (!member) {
+        throw new ForbiddenException('Not a member of this team');
+      }
+      if (member.role === 'VIEWER') {
+        throw new ForbiddenException('Viewers cannot edit projects');
       }
     });
   }
